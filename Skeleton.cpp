@@ -61,6 +61,14 @@ const char * const fragmentSource = R"(
 	}
 )";
 
+vec4 asvec4(vec2 v) {
+    return vec4(v.x, v.y, 0, 1);
+}
+
+vec2 asvec2(vec4 v) {
+    return vec2(v.x, v.y);
+}
+
 struct Camera
 {
     /// Center in word coordiantes
@@ -141,10 +149,7 @@ public:
 		vertices,	      	// address
 		GL_DYNAMIC_DRAW);	// we do not change later
 
-	for (float f : vertices) {
-	    std::cout << f;
-	}
-	
+
 	glEnableVertexAttribArray(0);  // AttribArray 0
 	glVertexAttribPointer(0,       // vbo -> AttribArray 0
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
@@ -180,12 +185,6 @@ void onDisplay() {
     // Set color to (0, 1, 0) = green
     int location = glGetUniformLocation(gpuProgram.getId(), "color");
     glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
-
-    float MVPtransf[4][4] = { 1, 0, 0, 0,    // MVP matrix, 
-                              0, 1, 0, 0,    // row-major!
-                              0, 0, 1, 0,
-                              0, 0, 0, 1 };
-
     location = glGetUniformLocation(gpuProgram.getId(), "MVP");	// Get the GPU location of uniform variable MVP
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
@@ -228,6 +227,10 @@ void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel co
 	case GLUT_MIDDLE_BUTTON: printf("Middle button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY); break;
 	case GLUT_RIGHT_BUTTON:  printf("Right button %s at (%3.2f, %3.2f)\n", buttonStat, cX, cY);  break;
 	}
+	vec4 v4newPoint = asvec4(vec2(cX, cY));
+	v4newPoint = v4newPoint * camera.getInversMatrix();
+	vec2 v2newPoint = asvec2(v4newPoint);
+	ground->add(v2newPoint);
 }
 
 // Idle event indicating that some time elapsed: do animation here
