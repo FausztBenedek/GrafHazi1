@@ -32,6 +32,8 @@
 // negativ elojellel szamoljak el es ezzel parhuzamosan eljaras is indul velem szemben.
 //=============================================================================================
 #include "framework.h"
+#include <iostream>
+#include <vector>
 
 // vertex shader in GLSL: It is a Raw string (C++11) since it contains new line characters
 const char * const vertexSource = R"(
@@ -66,15 +68,13 @@ struct Camera
     float width;
     float height;
     float * matrix = new float[4 * 4];
-    
 public:
     Camera(vec2 wCenter, float width, float height)
     :wCenter(wCenter), width(width), height(height)
     {}
-
     mat4 getMatrix() {
-        float x_push = -wCenter.x / 2.0f;
-        float y_push = -wCenter.y / 2.0f;
+        float x_push = 2 * -wCenter.x / width;
+        float y_push = 2 * -wCenter.y / height;
         return mat4(
                 2/width, 0,        0, 0,
                 0,       2/height, 0, 0,
@@ -82,10 +82,9 @@ public:
                 x_push,  y_push,   0, 1
         );
     }
-    
     mat4 getInversMatrix() {
-	float x_push = wCenter.x / 2.0f;
-        float y_push = wCenter.y / 2.0f;
+	float x_push = wCenter.x;
+        float y_push = wCenter.y;
         return mat4(
                 width/2, 0,        0, 0,
                 0,       height/2, 0, 0,
@@ -96,37 +95,87 @@ public:
     virtual ~Camera() {
         delete[] matrix;
     }
-
 };
 
+class Ground {
+
+    vec2 end;
+    unsigned int vao;
+    unsigned int vbo;
+    std::vector<vec2> cPoints = std::vector<vec2>();
+    
+public:
+    Ground(vec2 start, vec2 end)
+    :end(end)
+    {
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	cPoints.push_back(start);
+	cPoints.push_back(end);
+    }
+    
+    void add(vec2 point) { 
+	// Keep the vec2 end at the end.
+	cPoints.pop_back();
+	cPoints.push_back(point); 
+	cPoints.push_back(end);
+    }
+    
+    void display() {
+	glGenVertexArrays(1, &vao);	// get 1 vao id
+	glBindVertexArray(vao);		// make it active
+
+	unsigned int vbo;		// vertex buffer object
+	glGenBuffers(1, &vbo);	// Generate 1 buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// Geometry with 24 bytes (6 floats or 3 x 2 coordinates)
+	float vertices[cPoints.size() * 2];
+	int doubleStep = 0;
+	for (int i = 0; i < cPoints.size(); i++){
+	    vertices[doubleStep] = cPoints[i].x;
+	    vertices[doubleStep+1] = cPoints[i].y;
+	    doubleStep += 2;
+	}
+	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+		sizeof(vertices),  // # bytes
+		vertices,	      	// address
+		GL_DYNAMIC_DRAW);	// we do not change later
+
+	for (float f : vertices) {
+	    std::cout << f;
+	}
+	
+	glEnableVertexAttribArray(0);  // AttribArray 0
+	glVertexAttribPointer(0,       // vbo -> AttribArray 0
+		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+		0, NULL); 		     // stride, offset: tightly packed
+	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, cPoints.size() /*# Elements*/);
+    }
+};
+
+
+
 GPUProgram gpuProgram; // vertex and fragment shaders
-unsigned int vao;	   // virtual world on the GPU
-Camera camera(vec2(2,2), 4, 4);
+Camera camera(
+    vec2(1,-1), // set center so that (0,0) is the bottom left corner
+    4,4);
+Ground * ground;
 
 // Initialization, create an OpenGL context
 void onInitialization() {
     glViewport(0, 0, windowWidth, windowHeight);
 
-    glGenVertexArrays(1, &vao);	// get 1 vao id
-    glBindVertexArray(vao);		// make it active
-
-    unsigned int vbo;		// vertex buffer object
-    glGenBuffers(1, &vbo);	// Generate 1 buffer
-    glBindBuffer(GL_ARRAY_BUFFER, vbo);
-    // Geometry with 24 bytes (6 floats or 3 x 2 coordinates)
-    float vertices[] = { -0.8f, -0.8f, -0.6f, 0.9f, 0.8f, 0.7f };
-    glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
-            sizeof(vertices),  // # bytes
-            vertices,	      	// address
-            GL_DYNAMIC_DRAW);	// we do not change later
-
-    glEnableVertexAttribArray(0);  // AttribArray 0
-    glVertexAttribPointer(0,       // vbo -> AttribArray 0
-            2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
-            0, NULL); 		     // stride, offset: tightly packed
+    
 
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
+    ground = new Ground(vec2(-1,1), vec2(0,0));
+
+    ground->add(vec2(1,1));
+    ground->add(vec2(1,-1));
+    
+    ground->add(vec2(-1,-1));
+
 }
 
 // Window has become invalid: Redraw
@@ -146,8 +195,7 @@ void onDisplay() {
     location = glGetUniformLocation(gpuProgram.getId(), "MVP");	// Get the GPU location of uniform variable MVP
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
-    glBindVertexArray(vao);  // Draw call
-    glDrawArrays(GL_TRIANGLES, 0 /*startIdx*/, 3 /*# Elements*/);
+    ground->display();
 
     glutSwapBuffers(); // exchange buffers for double buffering
 }
