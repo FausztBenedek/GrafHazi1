@@ -157,8 +157,8 @@ public:
 
 GPUProgram gpuProgram; // vertex and fragment shaders
 Camera camera(
-    vec2(1,-1), // set center so that (0,0) is the bottom left corner
-    4,4);
+    vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
+    windowWidth, windowHeight);
 Ground * ground;
 
 // Initialization, create an OpenGL context
@@ -169,13 +169,7 @@ void onInitialization() {
 
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
-    ground = new Ground(vec2(-1,1), vec2(0,0));
-
-    ground->add(vec2(1,1));
-    ground->add(vec2(1,-1));
-    
-    ground->add(vec2(-1,-1));
-
+    ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
 }
 
 // Window has become invalid: Redraw
