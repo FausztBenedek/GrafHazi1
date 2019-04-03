@@ -1,39 +1,8 @@
-//=============================================================================================
-// Mintaprogram: Zöld háromszög. Ervenyes 2018. osztol.
-//
-// A beadott program csak ebben a fajlban lehet, a fajl 1 byte-os ASCII karaktereket tartalmazhat, BOM kihuzando.
-// Tilos:
-// - mast "beincludolni", illetve mas konyvtarat hasznalni
-// - faljmuveleteket vegezni a printf-et kiveve
-// - Mashonnan atvett programresszleteket forrasmegjeloles nelkul felhasznalni es
-// - felesleges programsorokat a beadott programban hagyni!!!!!!! 
-// - felesleges kommenteket a beadott programba irni a forrasmegjelolest kommentjeit kiveve
-// ---------------------------------------------------------------------------------------------
-// A feladatot ANSI C++ nyelvu forditoprogrammal ellenorizzuk, a Visual Studio-hoz kepesti elteresekrol
-// es a leggyakoribb hibakrol (pl. ideiglenes objektumot nem lehet referencia tipusnak ertekul adni)
-// a hazibeado portal ad egy osszefoglalot.
-// ---------------------------------------------------------------------------------------------
-// A feladatmegoldasokban csak olyan OpenGL fuggvenyek hasznalhatok, amelyek az oran a feladatkiadasig elhangzottak 
-// A keretben nem szereplo GLUT fuggvenyek tiltottak.
-//
-// NYILATKOZAT
-// ---------------------------------------------------------------------------------------------
-// Nev    : 
-// Neptun : 
-// ---------------------------------------------------------------------------------------------
-// ezennel kijelentem, hogy a feladatot magam keszitettem, es ha barmilyen segitseget igenybe vettem vagy
-// mas szellemi termeket felhasznaltam, akkor a forrast es az atvett reszt kommentekben egyertelmuen jeloltem.
-// A forrasmegjeloles kotelme vonatkozik az eloadas foliakat es a targy oktatoi, illetve a
-// grafhazi doktor tanacsait kiveve barmilyen csatornan (szoban, irasban, Interneten, stb.) erkezo minden egyeb
-// informaciora (keplet, program, algoritmus, stb.). Kijelentem, hogy a forrasmegjelolessel atvett reszeket is ertem,
-// azok helyessegere matematikai bizonyitast tudok adni. Tisztaban vagyok azzal, hogy az atvett reszek nem szamitanak
-// a sajat kontribucioba, igy a feladat elfogadasarol a tobbi resz mennyisege es minosege alapjan szuletik dontes.
-// Tudomasul veszem, hogy a forrasmegjeloles kotelmenek megsertese eseten a hazifeladatra adhato pontokat
-// negativ elojellel szamoljak el es ezzel parhuzamosan eljaras is indul velem szemben.
-//=============================================================================================
 #include "framework.h"
 #include <iostream>
-#include <vector>
+#include <deque>
+#include <algorithm>
+#include <cmath>
 
 // vertex shader in GLSL: It is a Raw string (C++11) since it contains new line characters
 const char * const vertexSource = R"(
@@ -110,7 +79,8 @@ class Ground {
     vec2 end;
     unsigned int vao;
     unsigned int vbo;
-    std::vector<vec2> cPoints = std::vector<vec2>();
+    std::deque<vec2> cPoints = std::deque<vec2>();
+    float tension = 0.5;
     
 public:
     Ground(vec2 start, vec2 end)
@@ -122,11 +92,78 @@ public:
 	cPoints.push_back(end);
     }
     
+    static bool orderByX(vec2 left, vec2 last) { return left.x < last.x; }
+
     void add(vec2 point) { 
 	// Keep the vec2 end at the end.
 	cPoints.pop_back();
 	cPoints.push_back(point); 
+        // The clicked point should be sorted according to the x coordinate
+        std::sort(cPoints.begin(), cPoints.end(), orderByX);
 	cPoints.push_back(end);
+    }
+
+    /**
+     * @param x - Ranges between 0 and the width of the screen
+     */
+    vec2 r(float x) {
+        // The variables used in the formula
+        float x0, x1, x2, x3, y0, y1, y2, y3;
+
+        // 1. Preparing variables
+        // floatIndex is in [0, cPoins.size()] interval somewhere
+        float floatIndex = x * ( (float)cPoints.size() / (float)windowWidth );
+        // the floor of floatIndex is used as index
+        int index = std::min(floor(floatIndex), (double)cPoints.size());
+        // Declare points and calculate indexes in cPoints to them
+        vec2 p0, p1, p2, p3;
+        int index0, index1, index2, index3;
+        index0 = index - 1 < 0 ? cPoints.size() - 1 : index - 1;
+        index1 = index;
+        index2 = index + 1;
+        index3 = index + 2;
+        // If index is at the last point
+        if (index2 > cPoints.size() - 1){
+            index2 = 0;
+            index3 = 1;
+        } else if (index3 > cPoints.size() - 1) { // If index is at the position before the last
+            index3 = 0;
+        }
+
+        p0 = cPoints[index0]; p1 = cPoints[index1];
+        p2 = cPoints[index2]; p3 = cPoints[index3];
+
+        x0 = p0.x; y0 = p1.y;
+        x1 = p1.x; y1 = p1.y;
+        x2 = p2.x; y2 = p2.y;
+        x3 = p3.x; y3 = p3.y;
+
+        // 2. The formula 
+        float dy1 = (1 - tension) * (
+                (y1 - y0) / (x1 - x0)
+                +
+                (y2 - y1) / (x2 - x1)
+                );
+        float dy2 = (1 - tension) * (
+                (y2 - y1) / (x2 - x1)
+                +
+                (y3 - x2) / (x3 - x2)
+                );
+        float a0 = y1;
+        float a1 = dy1;
+        float a2 = 
+            ( 3 * (y2 - y1) ) / ( (float) std::pow(x2 - x1, 2) )
+            -
+            ( dy2 + 2 * dy1 ) / ( x2 - x1 );
+        float a3 = 
+            ( 2 * (y1 - y2) ) / ( (float) std::pow(x2 - x1, 3) )
+            -
+            ( dy2 + dy1 ) / ( (float) std::pow(x2 - x1, 2) );
+
+        return a3 * std::pow(x, 3) 
+             + a2 * std::pow(x, 2) 
+             + a1 * x 
+             + a0;
     }
     
     void display() {
