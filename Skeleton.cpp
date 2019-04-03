@@ -81,7 +81,7 @@ class Ground {
     unsigned int vao;
     unsigned int vbo;
     std::vector<vec2> cPoints = std::vector<vec2>();
-    float tension = 0.5;
+    float tension = -0.1;
     vec2 afterEnd;
 public:
     Ground(vec2 start, vec2 end)
