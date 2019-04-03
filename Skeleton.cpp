@@ -3,7 +3,7 @@
 #include <vector>
 #include <deque>
 #include <algorithm>
-#include <cmath>
+#include <math.h>
 
 // vertex shader in GLSL: It is a Raw string (C++11) since it contains new line characters
 const char * const vertexSource = R"(
@@ -120,10 +120,18 @@ public:
         // The variables used in the formula
         float x0, x1, x2, x3, y0, y1, y2, y3, dy1, dy2;
         // 1. Preparing variables
-        // floatIndex is in [0, cPoins.size()] interval somewhere
-        float floatIndex = x * ( ((float)cPoints.size() - 2) / (float)windowWidth ) + 1;
-        // the floor of floatIndex is used as index
-        int index = std::min(floor(floatIndex), (double)cPoints.size());
+        
+        int index = -1;
+        for (int i = 0; i < cPoints.size(); i++) {
+            if ( cPoints[i].x <= x && x <= cPoints[i+1].x  ) {
+                index = i;
+                break;
+            }
+        } 
+        if (index == -1) {
+            std::cout << "Previous point not found";
+        }
+
         // Declare points and calculate indexes in cPoints to them
         vec2 p0, p1, p2, p3;
         int index0, index1, index2, index3;
@@ -136,7 +144,7 @@ public:
 	p0 = cPoints[index0]; p1 = cPoints[index1];
 	p2 = cPoints[index2]; p3 = cPoints[index3];
 
-        x0 = p0.x; y0 = p1.y;
+        x0 = p0.x; y0 = p0.y;
         x1 = p1.x; y1 = p1.y;
         x2 = p2.x; y2 = p2.y;
         x3 = p3.x; y3 = p3.y;
@@ -155,19 +163,18 @@ public:
         float a0 = y1;
         float a1 = dy1;
         float a2 = 
-            ( 3 * (y2 - y1) ) / ( (float) std::pow(x2 - x1, 2) )
+            ( 3 * (y2 - y1) ) / ( (float) pow(x2 - x1, 2) )
             -
             ( dy2 + 2 * dy1 ) / ( x2 - x1 );
         float a3 = 
-            ( 2 * (y1 - y2) ) / ( (float) std::pow(x2 - x1, 3) )
-            -
-            ( dy2 + dy1 ) / ( (float) std::pow(x2 - x1, 2) );
-	
-        return vec2(x,
-	       a3 * std::pow(x, 3) 
-             + a2 * std::pow(x, 2) 
-             + a1 * x 
-             + a0);
+            ( 2 * (y1 - y2) ) / ( (float) pow(x2 - x1, 3) )
+            +
+            ( dy2 + dy1 ) / ( (float) pow(x2 - x1, 2) );
+        float y = a3 * std::pow(x - x1, 3) 
+             + a2 * std::pow(x - x1, 2) 
+             + a1 * (x - x1) 
+             + a0;
+        return vec2(x, y);
     }
     
     void display() {
@@ -271,7 +278,7 @@ void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel co
 	vec4 v4newPoint = asvec4(vec2(cX, cY));
 	v4newPoint = v4newPoint * camera.getInversMatrix();
 	vec2 v2newPoint = asvec2(v4newPoint);
-	ground->add(v2newPoint);
+	if (state == GLUT_DOWN) ground->add(v2newPoint);
 }
 
 // Idle event indicating that some time elapsed: do animation here
