@@ -159,11 +159,12 @@ public:
             ( 2 * (y1 - y2) ) / ( (float) std::pow(x2 - x1, 3) )
             -
             ( dy2 + dy1 ) / ( (float) std::pow(x2 - x1, 2) );
-
-        return a3 * std::pow(x, 3) 
+	
+        return vec2(x,
+	       a3 * std::pow(x, 3) 
              + a2 * std::pow(x, 2) 
              + a1 * x 
-             + a0;
+             + a0);
     }
     
     void display() {
@@ -174,11 +175,11 @@ public:
 	glGenBuffers(1, &vbo);	// Generate 1 buffer
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 	// Geometry with 24 bytes (6 floats or 3 x 2 coordinates)
-	float vertices[cPoints.size() * 2];
+	float vertices[windowWidth * 2];
 	int doubleStep = 0;
-	for (int i = 0; i < cPoints.size(); i++){
-	    vertices[doubleStep] = cPoints[i].x;
-	    vertices[doubleStep+1] = cPoints[i].y;
+	for (int i = 0; i < windowWidth; i++){
+	    vertices[doubleStep] = r(i).x;
+	    vertices[doubleStep+1] = r(i).y;
 	    doubleStep += 2;
 	}
 	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
@@ -191,7 +192,7 @@ public:
 	glVertexAttribPointer(0,       // vbo -> AttribArray 0
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); 		     // stride, offset: tightly packed
-	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, cPoints.size() /*# Elements*/);
+	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, sizeof(vertices) /*# Elements*/);
     }
 };
 
