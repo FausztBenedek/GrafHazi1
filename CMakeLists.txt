@@ -4,6 +4,9 @@ set(projectName "openglInit")
 project(${projectName})
 
 set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_BUILD_TYPE Debug)
+
+
 
 add_executable(${projectName} framework.cpp Skeleton.cpp)
 find_package(OpenGL REQUIRED)
