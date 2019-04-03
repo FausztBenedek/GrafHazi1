@@ -27,9 +27,10 @@ const char * const fragmentSource = R"(
 	out vec4 outColor;		// computed color of the current pixel
 
 	void main() {
-		outColor = vec4(0, 1, 0, 1);	// computed color is the color of the primitive
+		outColor = vec4(color, 1);	// computed color is the color of the primitive
 	}
 )";
+GPUProgram gpuProgram; // vertex and fragment shaders
 
 vec4 asvec4(vec2 v) {
     return vec4(v.x, v.y, 0, 1);
@@ -178,7 +179,8 @@ public:
     }
     
     void display() {
-	glGenVertexArrays(1, &vao);	// get 1 vao id
+        int location = glGetUniformLocation(gpuProgram.getId(), "color");
+        glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
 	glBindVertexArray(vao);		// make it active
 
 	unsigned int vbo;		// vertex buffer object
@@ -202,17 +204,46 @@ public:
 	glVertexAttribPointer(0,       // vbo -> AttribArray 0
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); 		     // stride, offset: tightly packed
-	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, sizeof(vertices) /*# Elements*/);
+	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, windowWidth /*Pair of elements*/);
     }
 };
 
+class Bike {
+    vec2 pos;
+    unsigned int vao;
+    unsigned int vbo;
+public:
+    Bike(vec2 startPos) 
+    :pos(startPos)
+    {
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+    }
+    void display() {
+        int location = glGetUniformLocation(gpuProgram.getId(), "color");
+        glUniform3f(location, 1.0f, 0.5f, 0.0f); // 3 floats
+	glBindVertexArray(vao);		// make it active
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        float vertices[] = {400.0f, 400.0f, 400.0f, 200.0f, 200.0f, 400.0f};
+	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+		sizeof(vertices),  // # bytes
+		vertices,	      	// address
+		GL_DYNAMIC_DRAW);	
 
 
-GPUProgram gpuProgram; // vertex and fragment shaders
+	glEnableVertexAttribArray(0);  // AttribArray 0
+	glVertexAttribPointer(0,       // vbo -> AttribArray 0
+		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+		0, NULL); 		     // stride, offset: tightly packed
+	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, 3 /*# Elements*/);
+    }
+};
+
 Camera camera(
     vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
 Ground * ground;
+Bike * bike;
 
 // Initialization, create an OpenGL context
 void onInitialization() {
@@ -223,6 +254,7 @@ void onInitialization() {
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
+    bike = new Bike(vec2(300, 300));
 }
 
 // Window has become invalid: Redraw
@@ -237,6 +269,7 @@ void onDisplay() {
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
     ground->display();
+    bike->display();
 
     glutSwapBuffers(); // exchange buffers for double buffering
 }
