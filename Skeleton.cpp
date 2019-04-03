@@ -212,6 +212,7 @@ class Bike {
     vec2 pos;
     unsigned int vao;
     unsigned int vbo;
+    float rad = 50;
 public:
     Bike(vec2 startPos) 
     :pos(startPos)
@@ -224,7 +225,18 @@ public:
         glUniform3f(location, 1.0f, 0.5f, 0.0f); // 3 floats
 	glBindVertexArray(vao);		// make it active
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        float vertices[] = {400.0f, 400.0f, 400.0f, 200.0f, 200.0f, 400.0f};
+        // Draw circle
+        float vertices[360 * 2];
+	int doubleStep = 0;
+        for (int i = 0; i < 360; i++) {
+            vec2 edge;
+            float theta_rad = i * 2 * M_PI / (float) 360;
+            edge.x = pos.x + rad * cos(theta_rad);
+            edge.y = pos.y + rad * sin(theta_rad);
+            vertices[  doubleStep  ] = edge.x;
+            vertices[doubleStep + 1] = edge.y;
+            doubleStep += 2;
+        }
 	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
 		sizeof(vertices),  // # bytes
 		vertices,	      	// address
@@ -235,7 +247,7 @@ public:
 	glVertexAttribPointer(0,       // vbo -> AttribArray 0
 		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
 		0, NULL); 		     // stride, offset: tightly packed
-	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, 3 /*# Elements*/);
+	glDrawArrays(GL_LINE_STRIP, 0 /*startIdx*/, 360 /*# Elements*/);
     }
 };
 
