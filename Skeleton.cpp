@@ -208,11 +208,14 @@ public:
     }
 };
 
+Ground * ground;
+
 class Bike {
     vec2 pos;
     unsigned int vao;
     unsigned int vbo;
-    float rad = 50;
+    float rad = 10;
+    vec2 translate = vec2(0,0);
 public:
     Bike(vec2 startPos) 
     :pos(startPos)
@@ -220,7 +223,36 @@ public:
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
     }
+    void update_variables() {
+        pos.x += 1;
+    }
+    /**
+     * Pushes the circle, as if it would be on the top of the spline
+     */
+    void push_pos() {
+        float x = pos.x;
+
+        // Gravitational counter force
+        float f1;
+        vec2 diff = ground->r(x + 1) - ground->r(x);
+        vec2 normal;
+        // Swap coordinates and -1 (turn 90grad)
+        normal.x = diff.y * (-1); normal.y = diff.x;
+    
+        // Turn the vector around if y is negative
+        if (normal.y < 0) normal = normal * (-1);
+        normal = normalize(normal);
+        normal = normal * rad;
+
+        float y = ground->r(x).y;
+        pos = vec2(x, y);
+        x += normal.x;
+        y += normal.y;
+        translate = vec2(normal);
+    }
     void display() {
+        vec2 pos = this->pos;
+        pos = pos + translate;
         int location = glGetUniformLocation(gpuProgram.getId(), "color");
         glUniform3f(location, 1.0f, 0.5f, 0.0f); // 3 floats
 	glBindVertexArray(vao);		// make it active
@@ -254,7 +286,6 @@ public:
 Camera camera(
     vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
-Ground * ground;
 Bike * bike;
 
 // Initialization, create an OpenGL context
@@ -281,6 +312,8 @@ void onDisplay() {
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
     ground->display();
+    bike->update_variables();
+    bike->push_pos();
     bike->display();
 
     glutSwapBuffers(); // exchange buffers for double buffering
