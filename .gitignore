@@ -1,1 +1,5 @@
-bin/
+.kdev4/
+build/
+GreenTriangle.kdev4
+*.swp
+tags
