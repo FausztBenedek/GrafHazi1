@@ -37,7 +37,7 @@ public:
     const std::vector<vec4> getDrawingPoints() {
 
         std::vector<vec4> ret;
-        for (int i = 0; i < 360; i++) {
+        for (int i = 0; i < 361; i++) {
             // edge will be the new point to add
             vec4 edge(0, 0, 0, 1);
             // convert i to radian
@@ -46,19 +46,10 @@ public:
             edge.x = rad * cos(theta_rad);
             edge.y = rad * sin(theta_rad);
             ret.push_back(edge);
-            if (i == 90) {
-                // In this case the loop is at the top
-                // and the opposite edge is at the bottom
-                vec4 oppositeEdge(-rad, 0, 0, 1);
-                ret.push_back(oppositeEdge);
-                ret.push_back(edge); // Go back
-            }
-            else if (i == 180) {
-                // In this case the loop is at the right,
-                // so the opposite edge is at the left
-                vec4 oppositeEdge(0, rad, 0, 1);
-                ret.push_back(oppositeEdge);
-                ret.push_back(edge); // Go back
+            
+            if (i % 45 == 0) {
+                ret.push_back(edge * (-1));
+                ret.push_back(edge);
             }
         }
         for (int i = 0; i < ret.size(); i++) {
