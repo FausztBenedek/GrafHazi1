@@ -42,6 +42,7 @@ vec2 asvec2(vec4 v) {
 
 #include "src/camera.h"
 #include "src/ground.h"
+#include "src/circle.h"
 
 Ground * ground;
 
@@ -127,20 +128,23 @@ public:
 };
 
 Camera camera(
-    vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
+    vec2(0,0), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
 Bike * bike;
+Circle * circle;
+CircleDrawer * circleDraw;
+
 
 // Initialization, create an OpenGL context
 void onInitialization() {
     glViewport(0, 0, windowWidth, windowHeight);
 
-    
-
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
     bike = new Bike(vec2(300, 300));
+    circle = new Circle(vec2(100, 100), 100);
+    circleDraw = new CircleDrawer(circle);
 }
 
 // Window has become invalid: Redraw
@@ -158,6 +162,7 @@ void onDisplay() {
     bike->update_variables();
     bike->push_pos();
     bike->display();
+    circleDraw->draw();
 
     glutSwapBuffers(); // exchange buffers for double buffering
 }
