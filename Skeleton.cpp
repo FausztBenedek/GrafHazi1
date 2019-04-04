@@ -128,7 +128,7 @@ public:
 };
 
 Camera camera(
-    vec2(0,0), // set center so that (0,0) is the bottom left corner
+    vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
 Bike * bike;
 Circle * circle;
@@ -143,7 +143,7 @@ void onInitialization() {
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
     bike = new Bike(vec2(300, 300));
-    circle = new Circle(vec2(100, 100), 100);
+    circle = new Circle(vec2(400, 400), 100);
     circleDraw = new CircleDrawer(circle);
 }
 

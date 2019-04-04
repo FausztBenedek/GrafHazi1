@@ -7,7 +7,6 @@
 class Circle {
 
     float rad;
-    float alpha = 0;
 
     mat4 rotationMatrix() {
         return mat4(
@@ -30,9 +29,13 @@ public:
 
     Circle(vec2 center, float rad) 
     :rad(rad)
-    {}
+    {
+        this->center.x = center.x;
+        this->center.y = center.y;
+    }
 
     vec4 center;
+    float alpha = 0;
 
     const std::vector<vec4> getDrawingPoints() {
 
@@ -48,16 +51,32 @@ public:
             ret.push_back(edge);
             
             if (i % 45 == 0) {
-                ret.push_back(edge * (-1));
+                vec4 oppositeEdge = edge * (-1);
+                oppositeEdge.w = 1;
+                ret.push_back(oppositeEdge);
                 ret.push_back(edge);
             }
         }
         for (int i = 0; i < ret.size(); i++) {
-            ret[i] = ret[i] * 
-                this->rotationMatrix() *
-                this->translateMatrix();
+            ret[i] = ret[i] * this->rotationMatrix();
+            ret[i] = ret[i] * this->translateMatrix();
         }
         return ret;
+    }
+};
+
+class CircleController {
+
+    Circle * circle;
+    Ground * ground;
+
+public:
+    CircleController(Circle * circle, Ground * ground)
+    :circle(circle), ground(ground)
+    {}
+
+    void tick() {
+        
     }
 };
 
