@@ -76,7 +76,8 @@ public:
     {}
 
     void tick() {
-        
+        float x = circle->center.x;
+        circle->center.y = ground->r(x).y;
     }
 };
 

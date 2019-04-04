@@ -133,6 +133,7 @@ Camera camera(
 Bike * bike;
 Circle * circle;
 CircleDrawer * circleDraw;
+CircleController * circleControl;
 
 
 // Initialization, create an OpenGL context
@@ -143,8 +144,9 @@ void onInitialization() {
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
     bike = new Bike(vec2(300, 300));
-    circle = new Circle(vec2(400, 400), 100);
+    circle = new Circle(vec2(400, 400), 10);
     circleDraw = new CircleDrawer(circle);
+    circleControl = new CircleController(circle, ground);
 }
 
 // Window has become invalid: Redraw
@@ -169,7 +171,10 @@ void onDisplay() {
 
 // Key of ASCII code pressed
 void onKeyboard(unsigned char key, int pX, int pY) {
-	if (key == 'd') glutPostRedisplay();         // if d, invalidate display, i.e. redraw
+    if (key == 'd') { 
+        glutPostRedisplay();         // if d, invalidate display, i.e. redraw
+        circleControl->tick();
+    }
 }
 
 // Key of ASCII code released
