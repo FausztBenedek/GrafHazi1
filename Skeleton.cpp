@@ -41,10 +41,10 @@ vec2 asvec2(vec4 v) {
 }
 
 #include "src/camera.h"
-#include "src/ground.h"
+#include "src/spline.h"
 #include "src/circle.h"
 
-Ground * ground;
+Spline * ground;
 
 class Bike {
     vec2 pos;
@@ -142,9 +142,8 @@ void onInitialization() {
 
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
-    ground = new Ground(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2));
-    bike = new Bike(vec2(300, 300));
-    circle = new Circle(vec2(400, 400), 10);
+    ground = new Spline(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2), -0.1);
+    circle = new Circle(vec2(10, 400), 10);
     circleDraw = new CircleDrawer(circle);
     circleControl = new CircleController(circle, ground);
 }
@@ -161,9 +160,6 @@ void onDisplay() {
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
     ground->display();
-    bike->update_variables();
-    bike->push_pos();
-    bike->display();
     circleDraw->draw();
 
     glutSwapBuffers(); // exchange buffers for double buffering

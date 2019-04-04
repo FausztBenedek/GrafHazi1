@@ -1,16 +1,17 @@
 #ifndef GROUND_H
 #define GROUND_H
-class Ground {
+class Spline {
 
     vec2 end;
     unsigned int vao;
     unsigned int vbo;
     std::vector<vec2> cPoints = std::vector<vec2>();
-    float tension = -0.1;
     vec2 afterEnd;
+    static bool orderByX(vec2 left, vec2 last) { return left.x < last.x; }
+    float tension;
 public:
-    Ground(vec2 start, vec2 end)
-    :end(end)
+    Spline(vec2 start, vec2 end, float tension)
+    :end(end), tension(tension)
     {
 	glGenVertexArrays(1, &vao);
 	glGenBuffers(1, &vbo);
@@ -24,8 +25,6 @@ public:
 	cPoints.push_back(afterEnd);
 	
     }
-    
-    static bool orderByX(vec2 left, vec2 last) { return left.x < last.x; }
 
     void add(vec2 point) { 
 	// Keep the vec2 end at the end.

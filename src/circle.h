@@ -68,16 +68,27 @@ public:
 class CircleController {
 
     Circle * circle;
-    Ground * ground;
+    Spline * ground;
 
 public:
-    CircleController(Circle * circle, Ground * ground)
+    CircleController(Circle * circle, Spline * ground)
     :circle(circle), ground(ground)
     {}
 
     void tick() {
-        float x = circle->center.x;
-        circle->center.y = ground->r(x).y;
+        // Update circle data
+        {
+            float vel = 1;
+            float dAlpha = 0.1;
+            circle->center.x += vel;;
+            circle->alpha += dAlpha;
+            if (circle->alpha > 2 * M_PI) circle->alpha = 0;
+        }
+        // Put circle to position
+        {
+            float x = circle->center.x;
+            circle->center.y = ground->r(x).y;
+        }
     }
 };
 
