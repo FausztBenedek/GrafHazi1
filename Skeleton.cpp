@@ -61,7 +61,7 @@ void onInitialization() {
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Spline(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2), -0.1);
-    circle = new Circle(vec2(10, 400), 100);
+    circle = new Circle(vec2(10, 400), 30);
     circleDraw = new CircleDrawer(circle);
     circleControl = new CircleController(circle, ground);
     bg = new Spline(vec2(0,2*windowHeight/3), vec2(windowWidth, 3*windowHeight/4), 0.1);

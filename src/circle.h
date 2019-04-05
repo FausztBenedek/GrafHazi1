@@ -60,7 +60,7 @@ public:
             edge.y = rad * sin(theta_rad);
             ret.push_back(edge);
             
-            if (i % 45 == 0) {
+            if (i % 90 == 0) {
                 vec4 oppositeEdge = edge * (-1);
                 oppositeEdge.w = 1;
                 ret.push_back(oppositeEdge);
@@ -89,12 +89,12 @@ public:
     void tick() {
         // Update circle data
         {
+            // The slope (derivative) (dx = vel)
+            float dy = ground->r(circle->center.x + 1).y - ground->r(circle->center.x).y;
 
             // Update velocity
             static float vel = 0; // difference in x coordinate
             {
-                // The slope (derivative)
-                float dy = ground->r(circle->center.x + 1).y - ground->r(circle->center.x).y;
 
                 // Effect of the gravitational
                 float f_grav_x; 
@@ -106,12 +106,14 @@ public:
                 // Experimented constant * velocity
                 f_airResistance_x = -0.05 * vel;
 
-                vel += f_grav_x; 
+                vel += f_grav_x;
                 vel += f_airResistance_x;
             }
 
             // Update andle
-            float dAlpha = -0.1;
+            float dAlpha; 
+            dAlpha = 0.025 * sqrt(dy*dy + vel*vel);
+            if (vel < 0) dAlpha *= -1;
 
 
             circle->center.x += vel;;
