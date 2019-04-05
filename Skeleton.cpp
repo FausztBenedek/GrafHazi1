@@ -44,10 +44,11 @@ vec2 asvec2(vec4 v) {
 #include "src/spline.h"
 #include "src/circle.h"
 
-Spline * ground;
 Camera camera(
     vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
+
+Spline * ground;
 Spline * bg;
 Circle * circle;
 CircleDrawer * circleDraw;
@@ -93,6 +94,9 @@ void onKeyboard(unsigned char key, int pX, int pY) {
     if (key == 'd') { 
         glutPostRedisplay();         // if d, invalidate display, i.e. redraw
         circleControl->tick();
+    }
+    if (key == ' ') {
+        camera.center = asvec2( circle->center );
     }
 }
 

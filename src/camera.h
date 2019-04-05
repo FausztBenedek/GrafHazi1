@@ -4,17 +4,19 @@
 struct Camera
 {
     /// Center in word coordiantes
-    vec2 wCenter;
     float width;
     float height;
     float * matrix = new float[4 * 4];
 public:
-    Camera(vec2 wCenter, float width, float height)
-    :wCenter(wCenter), width(width), height(height)
+    Camera(vec2 center, float width, float height)
+    :center(center), width(width), height(height)
     {}
+
+    vec2 center;
+
     mat4 getMatrix() {
-        float x_push = 2 * -wCenter.x / width;
-        float y_push = 2 * -wCenter.y / height;
+        float x_push = 2 * -center.x / width;
+        float y_push = 2 * -center.y / height;
         return mat4(
                 2/width, 0,        0, 0,
                 0,       2/height, 0, 0,
@@ -23,8 +25,8 @@ public:
         );
     }
     mat4 getInversMatrix() {
-	float x_push = wCenter.x;
-        float y_push = wCenter.y;
+	float x_push = center.x;
+        float y_push = center.y;
         return mat4(
                 width/2, 0,        0, 0,
                 0,       height/2, 0, 0,
