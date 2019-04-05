@@ -130,7 +130,7 @@ public:
 Camera camera(
     vec2(windowWidth/2, windowHeight/2), // set center so that (0,0) is the bottom left corner
     windowWidth, windowHeight);
-Bike * bike;
+Spline * bg;
 Circle * circle;
 CircleDrawer * circleDraw;
 CircleController * circleControl;
@@ -143,9 +143,13 @@ void onInitialization() {
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Spline(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2), -0.1);
-    circle = new Circle(vec2(10, 400), 10);
+    circle = new Circle(vec2(10, 400), 100);
     circleDraw = new CircleDrawer(circle);
     circleControl = new CircleController(circle, ground);
+    bg = new Spline(vec2(0,2*windowHeight/3), vec2(windowWidth, 3*windowHeight/4), 0.1);
+    bg->add(vec2(150, 550));
+    bg->add(vec2(300, 500));
+    bg->add(vec2(450, 575));
 }
 
 // Window has become invalid: Redraw
@@ -159,6 +163,7 @@ void onDisplay() {
     location = glGetUniformLocation(gpuProgram.getId(), "MVP");	// Get the GPU location of uniform variable MVP
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
+    bg->display();
     ground->display();
     circleDraw->draw();
 

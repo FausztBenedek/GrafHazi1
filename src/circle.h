@@ -16,12 +16,20 @@ class Circle {
                 0,          0,           0, 1 
                 );
     }
-    mat4 translateMatrix() {
+    mat4 centerSetterMatrix() {
         return mat4(
                 1,0,0,0,
                 0,1,0,0,
                 0,0,0,0,
                 center.x, center.y, 0, 1
+                );
+    }
+    mat4 pushFromCenterMatrix() {
+        return mat4(
+                1,0,0,0,
+                0,1,0,0,
+                0,0,0,0,
+                pushFromCenter.x, pushFromCenter.y, 0, 1
                 );
     }
 
@@ -35,7 +43,9 @@ public:
     }
 
     vec4 center;
+    vec2 pushFromCenter = vec2(0,0);
     float alpha = 0;
+    float getRad() { return rad; }
 
     const std::vector<vec4> getDrawingPoints() {
 
@@ -59,7 +69,8 @@ public:
         }
         for (int i = 0; i < ret.size(); i++) {
             ret[i] = ret[i] * this->rotationMatrix();
-            ret[i] = ret[i] * this->translateMatrix();
+            ret[i] = ret[i] * this->centerSetterMatrix();
+            ret[i] = ret[i] * this->pushFromCenterMatrix();
         }
         return ret;
     }
@@ -86,8 +97,24 @@ public:
         }
         // Put circle to position
         {
+            // Adjust y coordinate
             float x = circle->center.x;
             circle->center.y = ground->r(x).y;
+
+            // Push circle perpendicular to the ground spline
+            // This creates an illusion that the circle is ON the spline
+            vec2 diff = ground->r(x + 1) - ground->r(x);
+            vec2 normal;
+            // Swap coordinates and -1 (turn 90grad)
+            normal.x = diff.y * (-1); normal.y = diff.x;
+        
+            // Turn the vector around if y is negative
+            // normal has to be on the upper half plane
+            if (normal.y < 0) normal = normal * (-1);
+            normal = normalize(normal);
+            normal = normal * circle->getRad();
+
+            circle->pushFromCenter = normal;
         }
     }
 };
