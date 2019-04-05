@@ -93,16 +93,21 @@ public:
             // Update velocity
             static float vel = 0; // difference in x coordinate
             {
-                // Effecto of the gravitational
-                // The formula was calculated on a piece of paper
-                float f_grav_x; 
-                // Derivative: dr(x) / dx
+                // The slope (derivative)
                 float dy = ground->r(circle->center.x + 1).y - ground->r(circle->center.x).y;
+
+                // Effect of the gravitational
+                float f_grav_x; 
+                // The formula was calculated on a piece of paper
                 f_grav_x = (-1) * (dy * 10) / (dy*dy + 1);
 
+                // Effect of the air resistance
+                float f_airResistance_x;
+                // Experimented constant * velocity
+                f_airResistance_x = -0.05 * vel;
 
-
-                vel += f_grav_x;
+                vel += f_grav_x; 
+                vel += f_airResistance_x;
             }
 
             // Update andle
