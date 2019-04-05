@@ -89,13 +89,31 @@ public:
     void tick() {
         // Update circle data
         {
-            float vel = 1;
-            float dAlpha = 0.1;
+
+            // Update velocity
+            static float vel = 0; // difference in x coordinate
+            {
+                // Effecto of the gravitational
+                // The formula was calculated on a piece of paper
+                float f_grav_x; 
+                // Derivative: dr(x) / dx
+                float dy = ground->r(circle->center.x + 1).y - ground->r(circle->center.x).y;
+                f_grav_x = (-1) * (dy * 10) / (dy*dy + 1);
+
+
+
+                vel += f_grav_x;
+            }
+
+            // Update andle
+            float dAlpha = -0.1;
+
+
             circle->center.x += vel;;
             circle->alpha += dAlpha;
             if (circle->alpha > 2 * M_PI) circle->alpha = 0;
         }
-        // Put circle to position
+        // Put circle to position (make it appear as if it would be on the line)
         {
             // Adjust y coordinate
             float x = circle->center.x;
