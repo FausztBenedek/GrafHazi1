@@ -22,6 +22,13 @@ public:
 	
     }
 
+    mat4 transformationMatrix = mat4(
+            1,0,0,0,
+            0,1,0,0,
+            0,0,0,0,
+            0,0,0,1
+            );
+
     void add(vec2 point) { 
 	// Keep the vec2 end at the end.
 	cPoints.push_back(point); 
@@ -90,7 +97,7 @@ public:
              + a2 * std::pow(x - x1, 2) 
              + a1 * (x - x1) 
              + a0;
-        return vec2(x, y);
+        return asvec2(vec4(x, y) * this->transformationMatrix);
     }
     
 };

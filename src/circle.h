@@ -60,7 +60,7 @@ public:
             edge.y = rad * sin(theta_rad);
             ret.push_back(edge);
             
-            if (i % 100 == 0) {
+            if (i % 45 == 0) {
                 vec4 oppositeEdge = edge * (-1);
                 oppositeEdge.w = 1;
                 ret.push_back(oppositeEdge);
@@ -80,10 +80,11 @@ class CircleController {
 
     Circle * circle;
     Spline * ground;
+    bool rightGoing;
 
 public:
-    CircleController(Circle * circle, Spline * ground)
-    :circle(circle), ground(ground)
+    CircleController(Circle * circle, Spline * ground, bool rightGoing = true)
+    :circle(circle), ground(ground), rightGoing(rightGoing)
     {}
 
     void tick() {
@@ -99,15 +100,16 @@ public:
                 // Effect of the gravitational
                 float f_grav_x; 
                 // The formula was calculated on a piece of paper
-                f_grav_x = (-1) * (dy * 10) / (dy*dy + 1);
+                f_grav_x = -1 * (dy * 10) / (dy*dy + 1);
 
                 // Effect of the air resistance
                 float f_airResistance_x;
                 // Experimented constant * velocity
-                f_airResistance_x = -0.05 * vel;
+                f_airResistance_x = -0.005 * vel;
 
-                float f_ride = 1;
+                float f_ride = rightGoing ? 1.5 : -1.5;
 
+                std::cout << "grav: " << f_grav_x << ", resist: " << f_airResistance_x << ", ride: " << f_ride <<  "\n";
                 vel += f_grav_x;
                 vel += f_airResistance_x;
                 vel += f_ride;
@@ -115,13 +117,38 @@ public:
 
             // Update andle
             float dAlpha; 
-            dAlpha = 0.02 * sqrt(dy*dy + vel*vel);
-            if (vel < 0) dAlpha *= -1;
+            {
+                dAlpha = 0.02 * sqrt(dy*dy + vel*vel);
+                if (vel < 0) dAlpha *= -1;
+            }
 
 
             circle->center.x += vel;;
             circle->alpha += dAlpha;
             if (circle->alpha > 2 * M_PI) circle->alpha = 0;
+
+            // Determine direction and manage turn arounds at the side
+            {
+                if (rightGoing) {
+                    // If the circle is beyond the right side
+                    // than turn around
+                    if (circle->center.x + circle->getRad() > windowWidth) {
+                        rightGoing = false;
+                        vel = 0;
+                        circle->center.x = windowWidth - circle->getRad();
+                    }
+                    std::cout << "right\n";
+                } else {
+                    // If the circle is beyond the left side
+                    // than turn around
+                    if (circle->center.x - circle->getRad() < 0) {
+                        rightGoing = true;
+                        vel = 0;
+                        circle->center.x = circle->getRad();
+                    }
+                    std::cout << "left\n";
+                }
+            } 
         }
         // Put circle to position (make it appear as if it would be on the line)
         {
