@@ -109,7 +109,6 @@ public:
 
                 float f_ride = rightGoing ? 1.5 : -1.5;
 
-                std::cout << "grav: " << f_grav_x << ", resist: " << f_airResistance_x << ", ride: " << f_ride <<  "\n";
                 vel += f_grav_x;
                 vel += f_airResistance_x;
                 vel += f_ride;
@@ -137,7 +136,6 @@ public:
                         vel = 0;
                         circle->center.x = windowWidth - circle->getRad();
                     }
-                    std::cout << "right\n";
                 } else {
                     // If the circle is beyond the left side
                     // than turn around
@@ -146,7 +144,6 @@ public:
                         vel = 0;
                         circle->center.x = circle->getRad();
                     }
-                    std::cout << "left\n";
                 }
             } 
         }

@@ -96,8 +96,6 @@ void onDisplay() {
 // Key of ASCII code pressed
 void onKeyboard(unsigned char key, int pX, int pY) {
     if (key == 'd') { 
-        glutPostRedisplay();         // if d, invalidate display, i.e. redraw
-        circleControl->tick();
     }
     if (key == ' ') {
         camera.center = asvec2( circle->center );
@@ -142,4 +140,13 @@ void onMouse(int button, int state, int pX, int pY) { // pX, pY are the pixel co
 // Idle event indicating that some time elapsed: do animation here
 void onIdle() {
 	long time = glutGet(GLUT_ELAPSED_TIME); // elapsed time since the start of the program
+        static long prev_time = time;
+
+        if (time - prev_time > 50) {
+
+            glutPostRedisplay();         // if d, invalidate display, i.e. redraw
+            circleControl->tick();
+
+            prev_time = time;
+        }
 }
