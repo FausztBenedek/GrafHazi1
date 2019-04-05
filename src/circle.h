@@ -106,7 +106,7 @@ public:
                 // Experimented constant * velocity
                 f_airResistance_x = -0.05 * vel;
 
-                float f_ride = 0.7;
+                float f_ride = 1;
 
                 vel += f_grav_x;
                 vel += f_airResistance_x;

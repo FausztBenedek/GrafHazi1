@@ -49,7 +49,9 @@ Camera camera(
     windowWidth, windowHeight);
 
 Spline * ground;
+GroundDrawer * groundDrawer;
 Spline * bg;
+BgDrawer * bgDrawer;
 Circle * circle;
 CircleDrawer * circleDraw;
 CircleController * circleControl;
@@ -62,6 +64,7 @@ void onInitialization() {
     // create program for the GPU
     gpuProgram.Create(vertexSource, fragmentSource, "outColor");
     ground = new Spline(vec2(0,windowHeight/2), vec2(windowWidth, windowHeight/2), -0.1);
+    groundDrawer = new GroundDrawer(ground);
     circle = new Circle(vec2(10, 400), 30);
     circleDraw = new CircleDrawer(circle);
     circleControl = new CircleController(circle, ground);
@@ -69,6 +72,7 @@ void onInitialization() {
     bg->add(vec2(150, 550));
     bg->add(vec2(300, 500));
     bg->add(vec2(450, 575));
+    bgDrawer = new BgDrawer(bg);
 }
 
 // Window has become invalid: Redraw
@@ -82,8 +86,8 @@ void onDisplay() {
     location = glGetUniformLocation(gpuProgram.getId(), "MVP");	// Get the GPU location of uniform variable MVP
     glUniformMatrix4fv(location, 1, GL_TRUE, &camera.getMatrix().m[0][0]);	// Load a 4x4 row-major float matrix to the specified location
 
-    bg->display();
-    ground->display();
+    bgDrawer->draw();
+    groundDrawer->draw();
     circleDraw->draw();
 
     glutSwapBuffers(); // exchange buffers for double buffering

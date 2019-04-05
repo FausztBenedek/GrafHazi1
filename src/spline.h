@@ -3,8 +3,6 @@
 class Spline {
 
     vec2 end;
-    unsigned int vao;
-    unsigned int vbo;
     std::vector<vec2> cPoints = std::vector<vec2>();
     vec2 afterEnd;
     static bool orderByX(vec2 left, vec2 last) { return left.x < last.x; }
@@ -13,8 +11,6 @@ public:
     Spline(vec2 start, vec2 end, float tension)
     :end(end), tension(tension)
     {
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
 	vec2 beforeStart = vec2(start);
 	beforeStart.x -= 10;
 	afterEnd = vec2(end);
@@ -97,7 +93,67 @@ public:
         return vec2(x, y);
     }
     
-    void display() {
+};
+
+class GroundDrawer {
+    Spline * ground;
+    unsigned int vao;
+    unsigned int vbo;
+public:
+    GroundDrawer(Spline * ground)
+    :ground(ground)
+    {
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+    }
+
+    void draw() {
+        int location = glGetUniformLocation(gpuProgram.getId(), "color");
+        glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
+	glBindVertexArray(vao);		// make it active
+
+	unsigned int vbo;		// vertex buffer object
+	glGenBuffers(1, &vbo);	// Generate 1 buffer
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+	// Geometry with 24 bytes (6 floats or 3 x 2 coordinates)
+	float vertices[windowWidth * 4];
+	int quatroStep = 0;
+	for (int i = 0; i < windowWidth; i++){
+            float x = ground->r(i).x;
+	    vertices[quatroStep] = x;
+	    vertices[quatroStep+1] = ground->r(i).y;
+	    vertices[quatroStep+2] = x;
+	    vertices[quatroStep+3] = -500;
+
+	    quatroStep += 4;
+	}
+	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
+		sizeof(vertices),  // # bytes
+		vertices,	      	// address
+		GL_DYNAMIC_DRAW);	// we do not change later
+
+
+	glEnableVertexAttribArray(0);  // AttribArray 0
+	glVertexAttribPointer(0,       // vbo -> AttribArray 0
+		2, GL_FLOAT, GL_FALSE, // two floats/attrib, not fixed-point
+		0, NULL); 		     // stride, offset: tightly packed
+	glDrawArrays(GL_TRIANGLE_STRIP, 0 /*startIdx*/, windowWidth * 2 /*Pair of elements*/);
+    }
+};
+
+class BgDrawer {
+    Spline * ground;
+    unsigned int vao;
+    unsigned int vbo;
+public:
+    BgDrawer(Spline * ground)
+    :ground(ground)
+    {
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+    }
+
+    void draw() {
         int location = glGetUniformLocation(gpuProgram.getId(), "color");
         glUniform3f(location, 0.0f, 1.0f, 0.0f); // 3 floats
 	glBindVertexArray(vao);		// make it active
@@ -109,8 +165,8 @@ public:
 	float vertices[windowWidth * 2];
 	int doubleStep = 0;
 	for (int i = 0; i < windowWidth; i++){
-	    vertices[doubleStep] = r(i).x;
-	    vertices[doubleStep+1] = r(i).y;
+	    vertices[doubleStep] = ground->r(i).x;
+	    vertices[doubleStep+1] = ground->r(i).y;
 	    doubleStep += 2;
 	}
 	glBufferData(GL_ARRAY_BUFFER, 	// Copy to GPU target
