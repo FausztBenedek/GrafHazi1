@@ -28,13 +28,9 @@ public:
 
     void add(vec2 point) { 
 	// Keep the vec2 end at the end.
-	cPoints.pop_back();
-	cPoints.pop_back();
 	cPoints.push_back(point); 
         // The clicked point should be sorted according to the x coordinate
         std::sort(cPoints.begin(), cPoints.end(), orderByX);
-	cPoints.push_back(end);
-	cPoints.push_back(afterEnd);
     }
 
     /**
