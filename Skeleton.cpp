@@ -64,7 +64,7 @@ void onInitialization() {
     circle = new Circle(vec2(10, 400), 30);
     circleDraw = new CircleDrawer(circle);
     circleControl = new CircleController(circle, ground);
-    bg = new Spline(vec2(0,2*windowHeight/3), vec2(windowWidth, 3*windowHeight/4), 0.1);
+    bg = new Spline(vec2(0,2*windowHeight/3), vec2(windowWidth, 3*windowHeight/4), 1.5);
     bg->add(vec2(150, 550));
     bg->add(vec2(300, 500));
     bg->add(vec2(450, 575));

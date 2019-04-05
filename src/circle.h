@@ -60,7 +60,7 @@ public:
             edge.y = rad * sin(theta_rad);
             ret.push_back(edge);
             
-            if (i % 90 == 0) {
+            if (i % 100 == 0) {
                 vec4 oppositeEdge = edge * (-1);
                 oppositeEdge.w = 1;
                 ret.push_back(oppositeEdge);
@@ -106,13 +106,16 @@ public:
                 // Experimented constant * velocity
                 f_airResistance_x = -0.05 * vel;
 
+                float f_ride = 0.7;
+
                 vel += f_grav_x;
                 vel += f_airResistance_x;
+                vel += f_ride;
             }
 
             // Update andle
             float dAlpha; 
-            dAlpha = 0.025 * sqrt(dy*dy + vel*vel);
+            dAlpha = 0.02 * sqrt(dy*dy + vel*vel);
             if (vel < 0) dAlpha *= -1;
 
 
