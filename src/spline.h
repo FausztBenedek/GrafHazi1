@@ -97,7 +97,7 @@ public:
              + a2 * std::pow(x - x1, 2) 
              + a1 * (x - x1) 
              + a0;
-        return asvec2(vec4(x, y) * this->transformationMatrix);
+        return asvec2(vec4(x, y, 0, 1) * this->transformationMatrix);
     }
     
 };

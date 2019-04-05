@@ -91,6 +91,12 @@ void onDisplay() {
     circleDraw->draw();
 
     glutSwapBuffers(); // exchange buffers for double buffering
+    bg->transformationMatrix = mat4(
+            1,0,0,0,
+            0,1,0,0,
+            0,0,0,0,
+            camera.center.x - 300, camera.center.y - 300,0,1
+            );
 }
 
 // Key of ASCII code pressed
@@ -99,6 +105,7 @@ void onKeyboard(unsigned char key, int pX, int pY) {
     }
     if (key == ' ') {
         camera.center = asvec2( circle->center );
+
     }
 }
 
